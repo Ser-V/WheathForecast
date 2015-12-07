@@ -25,15 +25,23 @@ private slots:
   void addRowToSecondTable();
   void removeRowFromSecondTable();
 
+  void calByAverageValue();
+  void calByRegion();
+  void calByMinValue();
+
 private:
   void creatActions();
   void createContent();
+
+  void loadDataToTable(QTableWidget* table);
+  QList<QVector<double> > getDataFromTable(QTableWidget* table);
 
 private:
   QAction* m_closeAction;
 
   QTableWidget* m_firstTabel;
   QTableWidget* m_secondTabel;
+  QLineEdit* m_valueLEdit;
   QTextEdit* m_resultTEdit;
 };
 

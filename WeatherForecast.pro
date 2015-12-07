@@ -4,7 +4,9 @@ DEPENDPATH += .
 INCLUDEPATH += .
 QT += widgets
 
-HEADERS += src/Form.h
+HEADERS += src/Form.h \
+           src/Utils.h
 
 SOURCES += src/Form.cpp \
-           src/main.cpp
+           src/main.cpp \
+           src/Utils.cpp
