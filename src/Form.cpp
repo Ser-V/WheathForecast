@@ -225,8 +225,48 @@ void Form::calByAverageValue()
 
 void Form::calByRegion()
 {
+  QList<QList<QVector<double> > > groups;
+  groups.append(getDataFromTable(m_firstTabel));
+  groups.append(getDataFromTable(m_secondTabel));
+  QString valueStr = m_valueLEdit->text();
+  QStringList valueStrList = valueStr.split(" ");
+  QVector<double> valueVector;
+  for (int i = 0; i < valueStrList.count(); ++i)
+    valueVector.append(valueStrList.at(i).toDouble());
+  if (valueVector.count() != 2)
+  {
+    QMessageBox::warning(this, tr("Loading"), tr("Supported only 2 dimension"), QMessageBox::Ok);
+    return;
+  }
+  int groupNum = Utils::calcByRegion(groups, valueVector);
+  if (groupNum == -1)
+  {
+    m_resultTEdit->append(tr("No resulte"));
+    return;
+  }
+  m_resultTEdit->append(tr("Method by region: group %1").arg(groupNum+1));
 }
 
 void Form::calByMinValue()
 {
+  QList<QList<QVector<double> > > groups;
+  groups.append(getDataFromTable(m_firstTabel));
+  groups.append(getDataFromTable(m_secondTabel));
+  QString valueStr = m_valueLEdit->text();
+  QStringList valueStrList = valueStr.split(" ");
+  QVector<double> valueVector;
+  for (int i = 0; i < valueStrList.count(); ++i)
+    valueVector.append(valueStrList.at(i).toDouble());
+  if (valueVector.count() != 2)
+  {
+    QMessageBox::warning(this, tr("Loading"), tr("Supported only 2 dimension"), QMessageBox::Ok);
+    return;
+  }
+  int groupNum = Utils::calcByMinValue(groups, valueVector);
+  if (groupNum == -1)
+  {
+    m_resultTEdit->append(tr("No resulte"));
+    return;
+  }
+  m_resultTEdit->append(tr("Method by min value: group %1").arg(groupNum+1));
 }
