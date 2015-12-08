@@ -19,15 +19,15 @@ int Utils::calcByAverage(const QList< QList<QVector<double> > >& groups, const Q
       for (int i = 0; i < vector.count(); ++i)
         averageVector[i] += vector[i] / group.count();
     }
-    double distance2 = 0.0;
+    double distance2 = -1.0;
     for (int i = 0; i < averageVector.count(); ++i)
       distance2 += pow(averageVector[i] - value[i], 2);
-    if (resultGroup == -1)
+    if (resultGroup == -1 && distance2 > 0.0)
     {
       resultGroup = groupIndex;
       minDistance2 = distance2;
     }
-    if (distance2 < minDistance2)
+    if (distance2 > 0.0 && distance2 < minDistance2)
     {
       minDistance2 = distance2;
       resultGroup = groupIndex;

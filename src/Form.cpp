@@ -8,6 +8,7 @@
 #include <QLineEdit>
 #include <QMenu>
 #include <QMenuBar>
+#include <QMessageBox>
 #include <QPushButton>
 #include <QTableWidget>
 #include <QTableWidgetItem>
@@ -130,6 +131,11 @@ void Form::loadDataToTable(QTableWidget* table)
   {
     QString line = file.readLine();
     QStringList list = line.split(" ");
+    if (list.count() != 2)
+    {
+      QMessageBox::warning(this, tr("Loading"), tr("Supported only 2 dimension"), QMessageBox::Ok);
+      return;
+    }
     table->setRowCount(row + 1);
     for (int i = 0; i < list.count(); ++i)
     {
@@ -149,10 +155,12 @@ void Form::loadFirstTable()
 
 void Form::addRowToFisrtTable()
 {
+  m_firstTabel->setRowCount(m_firstTabel->rowCount() + 1);
 }
 
 void Form::removeRowFromFisrtTable()
 {
+  m_firstTabel->removeRow(m_firstTabel->currentRow());
 }
 
 void Form::loadSecondTable()
@@ -162,10 +170,12 @@ void Form::loadSecondTable()
 
 void Form::addRowToSecondTable()
 {
+  m_secondTabel->setRowCount(m_secondTabel->rowCount() + 1);
 }
 
 void Form::removeRowFromSecondTable()
 {
+  m_secondTabel->removeRow(m_secondTabel->currentRow());
 }
 
 QList<QVector<double> > Form::getDataFromTable(QTableWidget* table)
@@ -199,8 +209,18 @@ void Form::calByAverageValue()
   QVector<double> valueVector;
   for (int i = 0; i < valueStrList.count(); ++i)
     valueVector.append(valueStrList.at(i).toDouble());
+  if (valueVector.count() != 2)
+  {
+    QMessageBox::warning(this, tr("Loading"), tr("Supported only 2 dimension"), QMessageBox::Ok);
+    return;
+  }
   int groupNum = Utils::calcByAverage(groups, valueVector);
-  m_resultTEdit->insertPlainText(QString::number(groupNum));
+  if (groupNum == -1)
+  {
+    m_resultTEdit->append(tr("No resulte"));
+    return;
+  }
+  m_resultTEdit->append(tr("Method by average value: group %1").arg(groupNum+1));
 }
 
 void Form::calByRegion()

@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="Skins">
+        <file alias="ui-dark-orange">resources/css/ui-dark-orange.css</file>
+    </qresource>
+</RCC>

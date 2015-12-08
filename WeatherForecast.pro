@@ -10,3 +10,5 @@ HEADERS += src/Form.h \
 SOURCES += src/Form.cpp \
            src/main.cpp \
            src/Utils.cpp
+
+RESOURCES += WeatherForecast.qrc
