@@ -17,7 +17,9 @@
 #include "Form.h"
 #include "Utils.h"
 
-Form::Form(QWidget* parent) : QMainWindow(parent)
+const QString splitRegExp = "[\\s\t]";
+
+Form::Form(QWidget* parent) : QMainWindow(parent), m_dimension(-1)
 {
   creatActions();
   createContent();
@@ -45,7 +47,7 @@ void Form::createContent()
   QVBoxLayout* mainLayout = new QVBoxLayout(centralWidget);
   
   QHBoxLayout* tabelLayout = new QHBoxLayout();
-  QGroupBox* firstTabelGBox = new QGroupBox(tr("Group A"));
+  QGroupBox* firstTabelGBox = new QGroupBox(tr("Group 1"));
   QVBoxLayout* firstTableLayout = new QVBoxLayout(firstTabelGBox);
   m_firstTabel = new QTableWidget();
   m_firstTabel->setColumnCount(2);
@@ -64,7 +66,7 @@ void Form::createContent()
   connect(firstAddRowBtn, SIGNAL(clicked()), this, SLOT(addRowToFisrtTable()));
   connect(firstRemoveRowBtn, SIGNAL(clicked()), this, SLOT(removeRowFromFisrtTable()));
   
-  QGroupBox* secondTabelGBox = new QGroupBox(tr("Group B"));
+  QGroupBox* secondTabelGBox = new QGroupBox(tr("Group 2"));
   QVBoxLayout* secondTableLayout = new QVBoxLayout(secondTabelGBox);
   m_secondTabel = new QTableWidget();
   m_secondTabel->setColumnCount(2);
@@ -130,12 +132,16 @@ void Form::loadDataToTable(QTableWidget* table)
   while (!file.atEnd())
   {
     QString line = file.readLine();
-    QStringList list = line.split(" ");
-    if (list.count() != 2)
+    QStringList list = line.split(QRegExp(splitRegExp), QString::SkipEmptyParts);
+    if (m_dimension < 0)
+      m_dimension = list.count();
+    if (list.count() != m_dimension)
     {
-      QMessageBox::warning(this, tr("Loading"), tr("Supported only 2 dimension"), QMessageBox::Ok);
+      QMessageBox::warning(this, tr("Loading"), tr("Dimension is different"), QMessageBox::Ok);
       return;
     }
+    if (table->columnCount() != m_dimension)
+      table->setColumnCount(m_dimension);
     table->setRowCount(row + 1);
     for (int i = 0; i < list.count(); ++i)
     {
@@ -205,22 +211,31 @@ void Form::calByAverageValue()
   groups.append(getDataFromTable(m_firstTabel));
   groups.append(getDataFromTable(m_secondTabel));
   QString valueStr = m_valueLEdit->text();
-  QStringList valueStrList = valueStr.split(" ");
+  QStringList valueStrList = valueStr.split(QRegExp(splitRegExp), QString::SkipEmptyParts);
   QVector<double> valueVector;
   for (int i = 0; i < valueStrList.count(); ++i)
     valueVector.append(valueStrList.at(i).toDouble());
-  if (valueVector.count() != 2)
+  if (valueVector.count() != m_dimension)
   {
-    QMessageBox::warning(this, tr("Loading"), tr("Supported only 2 dimension"), QMessageBox::Ok);
+    QMessageBox::warning(this, tr("Loading"), tr("Dimension is different"), QMessageBox::Ok);
     return;
   }
-  int groupNum = Utils::calcByAverage(groups, valueVector);
+  QList<QVector<double> > averageVectors;
+  int groupNum = Utils::calcByAverage(groups, valueVector, averageVectors);
   if (groupNum == -1)
   {
     m_resultTEdit->append(tr("No resulte"));
     return;
   }
-  m_resultTEdit->append(tr("Method by average value: group %1").arg(groupNum+1));
+  QString avStr;
+  for (int i = 0; i < averageVectors.count(); ++i)
+  {
+    avStr += "(";
+    for (int j = 0; j < averageVectors.at(i).count(); ++j)
+      avStr += QString::number(averageVectors.at(i).at(j), 'f', 1) + " ";
+    avStr += ") ";
+  }
+  m_resultTEdit->append(tr("Method by average value: group %1, average vectors %2").arg(groupNum+1).arg(avStr));
 }
 
 void Form::calByRegion()
@@ -229,22 +244,23 @@ void Form::calByRegion()
   groups.append(getDataFromTable(m_firstTabel));
   groups.append(getDataFromTable(m_secondTabel));
   QString valueStr = m_valueLEdit->text();
-  QStringList valueStrList = valueStr.split(" ");
+  QStringList valueStrList = valueStr.split(QRegExp(splitRegExp), QString::SkipEmptyParts);
   QVector<double> valueVector;
   for (int i = 0; i < valueStrList.count(); ++i)
     valueVector.append(valueStrList.at(i).toDouble());
-  if (valueVector.count() != 2)
+  if (valueVector.count() != m_dimension)
   {
-    QMessageBox::warning(this, tr("Loading"), tr("Supported only 2 dimension"), QMessageBox::Ok);
+    QMessageBox::warning(this, tr("Loading"), tr("Dimension is different"), QMessageBox::Ok);
     return;
   }
-  int groupNum = Utils::calcByRegion(groups, valueVector);
+  double r;
+  int groupNum = Utils::calcByRegion(groups, valueVector, r);
   if (groupNum == -1)
   {
     m_resultTEdit->append(tr("No resulte"));
     return;
   }
-  m_resultTEdit->append(tr("Method by region: group %1").arg(groupNum+1));
+  m_resultTEdit->append(tr("Method by region: group %1, radius %2").arg(groupNum+1).arg(r));
 }
 
 void Form::calByMinValue()
@@ -253,20 +269,24 @@ void Form::calByMinValue()
   groups.append(getDataFromTable(m_firstTabel));
   groups.append(getDataFromTable(m_secondTabel));
   QString valueStr = m_valueLEdit->text();
-  QStringList valueStrList = valueStr.split(" ");
+  QStringList valueStrList = valueStr.split(QRegExp(splitRegExp), QString::SkipEmptyParts);
   QVector<double> valueVector;
   for (int i = 0; i < valueStrList.count(); ++i)
     valueVector.append(valueStrList.at(i).toDouble());
-  if (valueVector.count() != 2)
+  if (valueVector.count() != m_dimension)
   {
-    QMessageBox::warning(this, tr("Loading"), tr("Supported only 2 dimension"), QMessageBox::Ok);
+    QMessageBox::warning(this, tr("Loading"), tr("Dimension is different"), QMessageBox::Ok);
     return;
   }
-  int groupNum = Utils::calcByMinValue(groups, valueVector);
+  QVector<double> minP;
+  int groupNum = Utils::calcByMinValue(groups, valueVector, minP);
   if (groupNum == -1)
   {
     m_resultTEdit->append(tr("No resulte"));
     return;
   }
-  m_resultTEdit->append(tr("Method by min value: group %1").arg(groupNum+1));
+  QString mpStr;
+  for (int i = 0; i < minP.count(); ++i)
+    mpStr += QString::number(minP.at(i)) + " ";
+  m_resultTEdit->append(tr("Method by min value: group %1, min point (%2)").arg(groupNum+1).arg(mpStr));
 }

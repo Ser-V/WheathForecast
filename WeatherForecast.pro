@@ -4,6 +4,8 @@ DEPENDPATH += .
 INCLUDEPATH += .
 QT += widgets
 
+win32:RC_ICONS += resources/images/Weather.ico
+
 HEADERS += src/Form.h \
            src/Utils.h
 

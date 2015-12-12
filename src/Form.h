@@ -43,6 +43,8 @@ private:
   QTableWidget* m_secondTabel;
   QLineEdit* m_valueLEdit;
   QTextEdit* m_resultTEdit;
+
+  int m_dimension;
 };
 
 #endif /* FORM_H */

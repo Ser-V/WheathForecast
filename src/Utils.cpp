@@ -1,11 +1,13 @@
+#include <QtMath>
 #include <QMap>
 
 #include "Utils.h"
 
-const int requiredVectorCount = 2;
+const int requiredVectorCount = 8;
 
-int Utils::calcByAverage(const QList< QList<QVector<double> > >& groups, const QVector<double>& value)
+int Utils::calcByAverage(const QList< QList<QVector<double> > >& groups, const QVector<double>& value, QList<QVector<double> >& averagePoint)
 {
+  averagePoint.clear();
   int resultGroup = -1;
   double minDistance2 = 0.0;
   for (int groupIndex = 0; groupIndex < groups.count(); ++groupIndex)
@@ -23,6 +25,7 @@ int Utils::calcByAverage(const QList< QList<QVector<double> > >& groups, const Q
       for (int i = 0; i < vector.count(); ++i)
         averageVector[i] += vector[i] / group.count();
     }
+    averagePoint.append(averageVector);
     double distance2 = -1.0;
     for (int i = 0; i < averageVector.count(); ++i)
       distance2 += pow(averageVector[i] - value[i], 2);
@@ -40,7 +43,7 @@ int Utils::calcByAverage(const QList< QList<QVector<double> > >& groups, const Q
   return resultGroup;
 }
 
-int Utils::calcByRegion(const QList< QList<QVector<double> > >& groups, const QVector<double>& value)
+int Utils::calcByRegion(const QList< QList<QVector<double> > >& groups, const QVector<double>& value, double& radius)
 {
   int resultGroup = -1;
 
@@ -82,32 +85,35 @@ int Utils::calcByRegion(const QList< QList<QVector<double> > >& groups, const QV
     }
   }
 
+  radius = qSqrt(minDistance2);
   return resultGroup;
 }
 
-int Utils::calcByMinValue(const QList< QList<QVector<double> > >& groups, const QVector<double>& value)
+int Utils::calcByMinValue(const QList< QList<QVector<double> > >& groups, const QVector<double>& value, QVector<double>& minPoint)
 {
   int resultGroup = -1;
-  double minDistance2 = 0.0;
+  double minDistance2 = -1.0;
 
   for (int groupIndex = 0; groupIndex < groups.count(); ++groupIndex)
   {
     QList<QVector<double> > group = groups.at(groupIndex);
-    double distance2 = -1.0;
     for(int vectorIndex = 0; vectorIndex < group.count(); ++vectorIndex)
     {
+      double distance2 = -1.0;
       QVector<double> vector = group.at(vectorIndex);
       for (int i = 0; i < vector.count(); ++i)
         distance2 += pow(vector.at(i) - value.at(i), 2);
-      if (resultGroup == -1 && distance2 > 0.0)
+      if (resultGroup == -1)
       {
         resultGroup = groupIndex;
         minDistance2 = distance2;
+        minPoint = vector;
       }
-      if (distance2 > 0.0 && distance2 < minDistance2)
+      if (distance2 < minDistance2)
       {
         minDistance2 = distance2;
         resultGroup = groupIndex;
+        minPoint = vector;
       }
     }
   }
