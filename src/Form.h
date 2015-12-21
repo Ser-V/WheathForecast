@@ -25,6 +25,11 @@ private slots:
   void addRowToSecondTable();
   void removeRowFromSecondTable();
 
+  void loadCheckTable();
+  void saveResult();
+  void addRowToCheckTable();
+  void removeRowFromCheckTable();
+
   void calByAverageValue();
   void calByRegion();
   void calByMinValue();
@@ -33,7 +38,7 @@ private:
   void creatActions();
   void createContent();
 
-  void loadDataToTable(QTableWidget* table);
+  void loadDataToTable(QTableWidget* table, int additionColumns = 0);
   QList<QVector<double> > getDataFromTable(QTableWidget* table);
 
 private:
@@ -41,6 +46,7 @@ private:
 
   QTableWidget* m_firstTabel;
   QTableWidget* m_secondTabel;
+  QTableWidget* m_checkTable;
   QLineEdit* m_valueLEdit;
   QTextEdit* m_resultTEdit;
 

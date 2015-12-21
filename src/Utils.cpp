@@ -55,7 +55,7 @@ int Utils::calcByRegion(const QList< QList<QVector<double> > >& groups, const QV
     for(int vectorIndex = 0; vectorIndex < group.count(); ++vectorIndex)
     {
       QVector<double> vector = group.at(vectorIndex);
-      double distance2 = -1.0;
+      double distance2 = 0.0;
       for (int i = 0; i < vector.count(); ++i)
         distance2 += pow(vector.at(i) - value.at(i), 2);
       sortedVectors.insertMulti(distance2, vectorIndex);
