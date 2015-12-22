@@ -3,16 +3,16 @@
 
 #include "Utils.h"
 
-const int requiredVectorCount = 8;
+const int requiredVectorCount = 4;
 
-int Utils::calcByAverage(const QList< QList<QVector<double> > >& groups, const QVector<double>& value, QList<QVector<double> >& averagePoint)
+QString Utils::calcByAverage(const QMap<QString, VectorList >& groups, const QVector<double>& value, VectorList& averagePoint)
 {
   averagePoint.clear();
-  int resultGroup = -1;
+  QString resultGroup;
   double minDistance2 = 0.0;
-  for (int groupIndex = 0; groupIndex < groups.count(); ++groupIndex)
+  for (QMap<QString, VectorList>::const_iterator cit = groups.cbegin(); cit != groups.cend(); ++cit)
   {
-    QList<QVector<double> > group = groups.at(groupIndex);
+    QList<QVector<double> > group = cit.value();
     QVector<double> averageVector;
     for(int vectorIndex = 0; vectorIndex < group.count(); ++vectorIndex)
     {
@@ -29,28 +29,28 @@ int Utils::calcByAverage(const QList< QList<QVector<double> > >& groups, const Q
     double distance2 = -1.0;
     for (int i = 0; i < averageVector.count(); ++i)
       distance2 += pow(averageVector[i] - value[i], 2);
-    if (resultGroup == -1 && distance2 > 0.0)
+    if (resultGroup.isEmpty() && distance2 > 0.0)
     {
-      resultGroup = groupIndex;
+      resultGroup = cit.key();
       minDistance2 = distance2;
     }
     if (distance2 > 0.0 && distance2 < minDistance2)
     {
       minDistance2 = distance2;
-      resultGroup = groupIndex;
+      resultGroup = cit.key();
     }
   }
   return resultGroup;
 }
 
-int Utils::calcByRegion(const QList< QList<QVector<double> > >& groups, const QVector<double>& value, double& radius)
+QString Utils::calcByRegion(const QMap<QString, VectorList>& groups, const QVector<double>& value, double& radius)
 {
-  int resultGroup = -1;
+  QString resultGroup;
 
-  QList<QMap<double, int> > sortedVectorList;
-  for (int groupIndex = 0; groupIndex < groups.count(); ++groupIndex)
+  QMap<QString, QMap<double, int> > sortedVectorList;
+  for (QMap<QString, VectorList>::const_iterator cit = groups.cbegin(); cit != groups.cend(); ++cit)
   {
-    QList<QVector<double> > group = groups.at(groupIndex);
+    QList<QVector<double> > group = cit.value();
     QMap<double, int> sortedVectors;
     for(int vectorIndex = 0; vectorIndex < group.count(); ++vectorIndex)
     {
@@ -60,14 +60,14 @@ int Utils::calcByRegion(const QList< QList<QVector<double> > >& groups, const QV
         distance2 += pow(vector.at(i) - value.at(i), 2);
       sortedVectors.insertMulti(distance2, vectorIndex);
     }
-    sortedVectorList.append(sortedVectors);
+    sortedVectorList.insert(cit.key(), sortedVectors);
   }
 
   double minDistance2 = -1.0;
-  for (int i = 0; i < sortedVectorList.count(); ++i)
+  for (QMap<QString, QMap<double, int> >::const_iterator scit = sortedVectorList.cbegin(); scit != sortedVectorList.cend(); ++scit)
   {
-    QMap<double, int>::const_iterator cit = sortedVectorList.at(i).cbegin();
-    if (requiredVectorCount <= sortedVectorList.at(i).count())
+    QMap<double, int>::const_iterator cit = scit->cbegin();
+    if (requiredVectorCount <= scit->count())
       cit += requiredVectorCount;
     else
       continue;
@@ -75,13 +75,13 @@ int Utils::calcByRegion(const QList< QList<QVector<double> > >& groups, const QV
     if (minDistance2 < 0.0)
     {
       minDistance2 = cit.key();
-      resultGroup = i;
+      resultGroup = scit.key();
     }
 
     if (cit.key() < minDistance2)
     {
       minDistance2 = cit.key();
-      resultGroup = i;
+      resultGroup = scit.key();
     }
   }
 
@@ -89,30 +89,30 @@ int Utils::calcByRegion(const QList< QList<QVector<double> > >& groups, const QV
   return resultGroup;
 }
 
-int Utils::calcByMinValue(const QList< QList<QVector<double> > >& groups, const QVector<double>& value, QVector<double>& minPoint)
+QString Utils::calcByMinValue(const QMap<QString, VectorList>& groups, const QVector<double>& value, QVector<double>& minPoint)
 {
-  int resultGroup = -1;
+  QString resultGroup;
   double minDistance2 = -1.0;
 
-  for (int groupIndex = 0; groupIndex < groups.count(); ++groupIndex)
+  for (QMap<QString, VectorList>::const_iterator cit = groups.cbegin(); cit != groups.cend(); ++cit)
   {
-    QList<QVector<double> > group = groups.at(groupIndex);
+    QList<QVector<double> > group = cit.value();
     for(int vectorIndex = 0; vectorIndex < group.count(); ++vectorIndex)
     {
       double distance2 = -1.0;
       QVector<double> vector = group.at(vectorIndex);
       for (int i = 0; i < vector.count(); ++i)
         distance2 += pow(vector.at(i) - value.at(i), 2);
-      if (resultGroup == -1)
+      if (resultGroup.isEmpty())
       {
-        resultGroup = groupIndex;
+        resultGroup = cit.key();
         minDistance2 = distance2;
         minPoint = vector;
       }
       if (distance2 < minDistance2)
       {
         minDistance2 = distance2;
-        resultGroup = groupIndex;
+        resultGroup = cit.key();
         minPoint = vector;
       }
     }

@@ -4,12 +4,14 @@
 #include <QList>
 #include <QVector>
 
+typedef  QList<QVector<double> > VectorList;
+
 class Utils
 {
 public:
-  static int calcByAverage(const QList< QList<QVector<double> > >& groups, const QVector<double>& value, QList<QVector<double> >& averagePoint);
-  static int calcByRegion(const QList< QList<QVector<double> > >& groups, const QVector<double>& value, double& radius);
-  static int calcByMinValue(const QList< QList<QVector<double> > >& groups, const QVector<double>& value, QVector<double>& minPoint);
+  static QString calcByAverage(const QMap<QString, VectorList>& groups, const QVector<double>& value, VectorList& averagePoint);
+  static QString calcByRegion(const QMap<QString, VectorList>& groups, const QVector<double>& value, double& radius);
+  static QString calcByMinValue(const QMap<QString, VectorList>& groups, const QVector<double>& value, QVector<double>& minPoint);
 };
 
 #endif // UTILS_H

@@ -3,6 +3,8 @@
 
 #include <QMainWindow>
 
+#include "Utils.h"
+
 class QAction;
 class QLineEdit;
 class QTableWidget;
@@ -21,10 +23,6 @@ private slots:
   void addRowToFisrtTable();
   void removeRowFromFisrtTable();
 
-  void loadSecondTable();
-  void addRowToSecondTable();
-  void removeRowFromSecondTable();
-
   void loadCheckTable();
   void saveResult();
   void addRowToCheckTable();
@@ -39,15 +37,13 @@ private:
   void createContent();
 
   void loadDataToTable(QTableWidget* table, int additionColumns = 0);
-  QList<QVector<double> > getDataFromTable(QTableWidget* table);
+  QMap<QString, VectorList > getDataFromTable(const QTableWidget* table) const;
 
 private:
   QAction* m_closeAction;
 
   QTableWidget* m_firstTabel;
-  QTableWidget* m_secondTabel;
   QTableWidget* m_checkTable;
-  QLineEdit* m_valueLEdit;
   QTextEdit* m_resultTEdit;
 
   int m_dimension;

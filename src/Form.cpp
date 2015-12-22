@@ -16,7 +16,6 @@
 #include <QTextStream>
 
 #include "Form.h"
-#include "Utils.h"
 
 const QString splitRegExp = "[\\s\t]";
 
@@ -48,7 +47,7 @@ void Form::createContent()
   QVBoxLayout* mainLayout = new QVBoxLayout(centralWidget);
   
   QHBoxLayout* tabelLayout = new QHBoxLayout();
-  QGroupBox* firstTabelGBox = new QGroupBox(tr("Group 1"));
+  QGroupBox* firstTabelGBox = new QGroupBox(tr("Groups"));
   QVBoxLayout* firstTableLayout = new QVBoxLayout(firstTabelGBox);
   m_firstTabel = new QTableWidget();
   m_firstTabel->setColumnCount(2);
@@ -66,30 +65,9 @@ void Form::createContent()
   connect(firstLoadFroFileBtn, SIGNAL(clicked()), this, SLOT(loadFirstTable()));
   connect(firstAddRowBtn, SIGNAL(clicked()), this, SLOT(addRowToFisrtTable()));
   connect(firstRemoveRowBtn, SIGNAL(clicked()), this, SLOT(removeRowFromFisrtTable()));
-  
-  QGroupBox* secondTabelGBox = new QGroupBox(tr("Group 2"));
-  QVBoxLayout* secondTableLayout = new QVBoxLayout(secondTabelGBox);
-  m_secondTabel = new QTableWidget();
-  m_secondTabel->setColumnCount(2);
-  QHBoxLayout* secondBtnsLayout = new QHBoxLayout();
-  QPushButton* secondLoadFroFileBtn = new QPushButton(tr("Load from file"));
-  QPushButton* secondAddRowBtn = new QPushButton(tr("Add"));
-  QPushButton* secondRemoveRowBtn = new QPushButton(tr("Remove"));
-  secondBtnsLayout->addWidget(secondLoadFroFileBtn);
-  secondBtnsLayout->addStretch();
-  secondBtnsLayout->addWidget(secondAddRowBtn);
-  secondBtnsLayout->addWidget(secondRemoveRowBtn);
-  secondTableLayout->addWidget(m_secondTabel);
-  secondTableLayout->addLayout(secondBtnsLayout);
-
-  connect(secondLoadFroFileBtn, SIGNAL(clicked()), this, SLOT(loadSecondTable()));
-  connect(secondAddRowBtn, SIGNAL(clicked()), this, SLOT(addRowToSecondTable()));
-  connect(secondRemoveRowBtn, SIGNAL(clicked()), this, SLOT(removeRowFromSecondTable()));
 
   tabelLayout->addWidget(firstTabelGBox);
-  tabelLayout->addWidget(secondTabelGBox);
 
-  m_valueLEdit = new QLineEdit();
   QHBoxLayout* calcBtnLayout = new QHBoxLayout();
   QPushButton* calcByAverageValueBtn = new QPushButton(tr("Calculate by average value"));
   QPushButton* calcByRegionBtn = new QPushButton(tr("Calculate by region"));
@@ -102,7 +80,7 @@ void Form::createContent()
   connect(calcByRegionBtn, SIGNAL(clicked()), this, SLOT(calByRegion()));
   connect(calcByMinValueBtn, SIGNAL(clicked()), this, SLOT(calByMinValue()));
   
-  QGroupBox* checkGBox = new QGroupBox();
+  QGroupBox* checkGBox = new QGroupBox(tr("Test data"));
   QVBoxLayout* checkLayout = new QVBoxLayout(checkGBox);
   QHBoxLayout* checkBtnsLayout = new QHBoxLayout();
   QPushButton* checkLoadFromFileBtn = new QPushButton(tr("Load from file"));
@@ -115,6 +93,7 @@ void Form::createContent()
   checkBtnsLayout->addWidget(checkAddRowBtn);
   checkBtnsLayout->addWidget(checkRemoveRowBtn);
   m_checkTable = new QTableWidget();
+  m_checkTable->setColumnCount(3);
   checkLayout->addWidget(m_checkTable);
   checkLayout->addLayout(checkBtnsLayout);
 
@@ -129,7 +108,6 @@ void Form::createContent()
   resultLayout->addWidget(m_resultTEdit);
 
   mainLayout->addLayout(tabelLayout);
-  mainLayout->addWidget(m_valueLEdit);
   mainLayout->addWidget(checkGBox);
   mainLayout->addLayout(calcBtnLayout);
   mainLayout->addWidget(resultGBox);
@@ -157,14 +135,16 @@ void Form::loadDataToTable(QTableWidget* table, int additionColumns)
     QString line = file.readLine();
     QStringList list = line.split(QRegExp(splitRegExp), QString::SkipEmptyParts);
     if (m_dimension < 0)
-      m_dimension = list.count();
+      m_dimension = list.count() - 1;
+    /*
     if (list.count() != m_dimension)
     {
       QMessageBox::warning(this, tr("Loading"), tr("Dimension is different"), QMessageBox::Ok);
       return;
     }
-    if (table->columnCount() != m_dimension)
-      table->setColumnCount(m_dimension + additionColumns);
+    /**/
+    if (table->columnCount() != list.count())
+      table->setColumnCount(list.count() + additionColumns);
     table->setRowCount(row + 1);
     for (int i = 0; i < list.count(); ++i)
     {
@@ -173,7 +153,18 @@ void Form::loadDataToTable(QTableWidget* table, int additionColumns)
       item->setData(Qt::DisplayRole, value);
       table->setItem(row, i, item);
     }
+    if (additionColumns > 0)
+    {
+      QTableWidgetItem* item = new QTableWidgetItem();
+      item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+      table->setItem(row, table->columnCount() - additionColumns, item);
+    }
     ++row;
+  }
+  if (additionColumns > 0)
+  {
+    QTableWidgetItem* item = new QTableWidgetItem(tr("Result"));
+    table->setHorizontalHeaderItem(table->columnCount() - additionColumns, item);
   }
 }
 
@@ -192,21 +183,6 @@ void Form::removeRowFromFisrtTable()
   m_firstTabel->removeRow(m_firstTabel->currentRow());
 }
 
-void Form::loadSecondTable()
-{
-  loadDataToTable(m_secondTabel);
-}
-
-void Form::addRowToSecondTable()
-{
-  m_secondTabel->setRowCount(m_secondTabel->rowCount() + 1);
-}
-
-void Form::removeRowFromSecondTable()
-{
-  m_secondTabel->removeRow(m_secondTabel->currentRow());
-}
-
 void Form::loadCheckTable()
 {
   loadDataToTable(m_checkTable, 1);
@@ -214,7 +190,7 @@ void Form::loadCheckTable()
 
 void Form::saveResult()
 {
-  QString fileName = QFileDialog::getSaveFileName(this, tr("Save"), "", "*.txt *.csv");
+  QString fileName = QFileDialog::getSaveFileName(this, tr("Save"), "", "*.txt;; *.csv");
   if (fileName.isEmpty())
     return;
   QFile file(fileName);
@@ -244,33 +220,36 @@ void Form::removeRowFromCheckTable()
   m_checkTable->removeRow(m_checkTable->currentRow());
 }
 
-QList<QVector<double> > Form::getDataFromTable(QTableWidget* table)
+QMap<QString, VectorList > Form::getDataFromTable(const QTableWidget* table) const
 {
-  QList<QVector<double> > group;
+  QMap<QString, VectorList > map;
   if (!table)
-    return group;
+    return map;
 
   for (int row = 0; row < table->rowCount(); ++row)
   {
     QVector<double> vector;
-    for (int column = 0; column < table->columnCount(); ++column)
+    QString group;
+    for (int column = 0; column < table->columnCount() - 1; ++column)
     {
       QTableWidgetItem* item = table->item(row, column);
       if (!item)
         continue;
       vector.append(item->data(Qt::DisplayRole).toDouble());
     }
-    group.append(vector);
+    QTableWidgetItem* item = table->item(row, table->columnCount() - 1);
+    if (item)
+      group = item->data(Qt::DisplayRole).toString();
+    if (!group.isEmpty())
+      map[group].append(vector);
   }
-  return group;
+
+  return map;
 }
 
 void Form::calByAverageValue()
 {
-  QList<QList<QVector<double> > > groups;
-  groups.append(getDataFromTable(m_firstTabel));
-  groups.append(getDataFromTable(m_secondTabel));
-  //QString valueStr = m_valueLEdit->text();
+  QMap<QString, VectorList > groups = getDataFromTable(m_firstTabel);
   for (int vectorNum = 0; vectorNum < m_checkTable->rowCount(); ++vectorNum)
   {
     QVector<double> valueVector;
@@ -282,11 +261,11 @@ void Form::calByAverageValue()
       continue;
     }
     QList<QVector<double> > averageVectors;
-    int groupNum = Utils::calcByAverage(groups, valueVector, averageVectors);
-    if (groupNum >= 0)
+    QString group = Utils::calcByAverage(groups, valueVector, averageVectors);
+    if (!group.isEmpty())
     {
       QTableWidgetItem* item = new QTableWidgetItem();
-      item->setData(Qt::DisplayRole, groupNum + 1);
+      item->setData(Qt::DisplayRole, group);
       m_checkTable->setItem(vectorNum, m_checkTable->columnCount() - 1, item);
       QString avStr;
       for (int i = 0; i < averageVectors.count(); ++i)
@@ -296,16 +275,14 @@ void Form::calByAverageValue()
           avStr += QString::number(averageVectors.at(i).at(j), 'f', 1) + " ";
         avStr += ") ";
       }
-      m_resultTEdit->append(tr("Method by average value: group %1, average vectors %2").arg(groupNum+1).arg(avStr));
+      m_resultTEdit->append(tr("%1) Method by average value: group %2, average vectors %3").arg(vectorNum+1).arg(group).arg(avStr));
     }
   }
 }
 
 void Form::calByRegion()
 {
-  QList<QList<QVector<double> > > groups;
-  groups.append(getDataFromTable(m_firstTabel));
-  groups.append(getDataFromTable(m_secondTabel));
+  QMap<QString, VectorList > groups = getDataFromTable(m_firstTabel);
   for (int vectorNum = 0; vectorNum < m_checkTable->rowCount(); ++vectorNum)
   {
     QVector<double> valueVector;
@@ -317,22 +294,20 @@ void Form::calByRegion()
       continue;
     }
     double r;
-    int groupNum = Utils::calcByRegion(groups, valueVector, r);
-    if (groupNum >= 0)
+    QString group = Utils::calcByRegion(groups, valueVector, r);
+    if (!group.isEmpty())
     {
       QTableWidgetItem* item = new QTableWidgetItem();
-      item->setData(Qt::DisplayRole, groupNum + 1);
+      item->setData(Qt::DisplayRole, group);
       m_checkTable->setItem(vectorNum, m_checkTable->columnCount() - 1, item);
-      m_resultTEdit->append(tr("Method by region: group %1, radius %2").arg(groupNum+1).arg(r));
+      m_resultTEdit->append(tr("%1) Method by region: group %2, radius %3").arg(vectorNum+1).arg(group).arg(r));
     }
   }
 }
 
 void Form::calByMinValue()
 {
-  QList<QList<QVector<double> > > groups;
-  groups.append(getDataFromTable(m_firstTabel));
-  groups.append(getDataFromTable(m_secondTabel));
+  QMap<QString, VectorList > groups = getDataFromTable(m_firstTabel);
   for (int vectorNum = 0; vectorNum < m_checkTable->rowCount(); ++vectorNum)
   {
     QVector<double> valueVector;
@@ -345,16 +320,16 @@ void Form::calByMinValue()
       continue;
     }
     QVector<double> minP;
-    int groupNum = Utils::calcByMinValue(groups, valueVector, minP);
-    if (groupNum >= 0)
+    QString group = Utils::calcByMinValue(groups, valueVector, minP);
+    if (!group.isEmpty())
     {
       QTableWidgetItem* item = new QTableWidgetItem();
-      item->setData(Qt::DisplayRole, groupNum + 1);
+      item->setData(Qt::DisplayRole, group);
       m_checkTable->setItem(vectorNum, m_checkTable->columnCount() - 1, item);
     }
     QString mpStr;
     for (int i = 0; i < minP.count(); ++i)
       mpStr += QString::number(minP.at(i)) + " ";
-    m_resultTEdit->append(tr("Method by min value: group %1, min point (%2)").arg(groupNum+1).arg(mpStr));
+    m_resultTEdit->append(tr("%1) Method by min value: group %2, min point (%3)").arg(vectorNum+1).arg(group).arg(mpStr));
   }
 }
