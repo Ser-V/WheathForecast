@@ -14,3 +14,5 @@ SOURCES += src/Form.cpp \
            src/Utils.cpp
 
 RESOURCES += WeatherForecast.qrc
+
+TRANSLATIONS += translations/weatherforecast_ru.ts

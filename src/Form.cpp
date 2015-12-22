@@ -21,6 +21,7 @@ const QString splitRegExp = "[\\s\t]";
 
 Form::Form(QWidget* parent) : QMainWindow(parent), m_dimension(-1)
 {
+  setWindowTitle(tr("Weather forecast"));
   creatActions();
   createContent();
 }
