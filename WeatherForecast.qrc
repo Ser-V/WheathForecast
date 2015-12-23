@@ -7,4 +7,7 @@
         <file alias="down_arrow.png">resources/images/down_arrow.png</file>
         <file>resources/images/handle.png</file>
     </qresource>
+    <qresource prefix="Translations">
+        <file alias="translation_ru">translations/weatherforecast_ru.qm</file>
+    </qresource>
 </RCC>

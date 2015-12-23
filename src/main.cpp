@@ -10,7 +10,7 @@ int main(int argc, char *argv[])
    QApplication app(argc, argv);
 
    QTranslator translator;
-   translator.load("weatherforecast_ru.qm");
+   translator.load(":/Translations/translation_ru");
    app.installTranslator(&translator);
 
    QResource resource(":/Skins/ui-dark-orange");
