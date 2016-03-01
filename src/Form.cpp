@@ -12,6 +12,7 @@
 #include <QPushButton>
 #include <QTableWidget>
 #include <QTableWidgetItem>
+#include <QTextCodec>
 #include <QTextEdit>
 #include <QTextStream>
 
@@ -48,7 +49,7 @@ void Form::createContent()
   QVBoxLayout* mainLayout = new QVBoxLayout(centralWidget);
   
   QHBoxLayout* tabelLayout = new QHBoxLayout();
-  QGroupBox* firstTabelGBox = new QGroupBox(tr("Groups"));
+  QGroupBox* firstTabelGBox = new QGroupBox(tr("Training sample"));
   QVBoxLayout* firstTableLayout = new QVBoxLayout(firstTabelGBox);
   m_firstTabel = new QTableWidget();
   m_firstTabel->setColumnCount(2);
@@ -81,7 +82,7 @@ void Form::createContent()
   connect(calcByRegionBtn, SIGNAL(clicked()), this, SLOT(calByRegion()));
   connect(calcByMinValueBtn, SIGNAL(clicked()), this, SLOT(calByMinValue()));
   
-  QGroupBox* checkGBox = new QGroupBox(tr("Test data"));
+  QGroupBox* checkGBox = new QGroupBox(tr("Control sample"));
   QVBoxLayout* checkLayout = new QVBoxLayout(checkGBox);
   QHBoxLayout* checkBtnsLayout = new QHBoxLayout();
   QPushButton* checkLoadFromFileBtn = new QPushButton(tr("Load from file"));
@@ -129,14 +130,15 @@ void Form::loadDataToTable(QTableWidget* table, int additionColumns)
   QFile file(fileName);
   if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
     return;
-
-  int row = 0;
+  
+  table->clear();
+  int row = -1;
   while (!file.atEnd())
   {
-    QString line = file.readLine();
+    QString line = QTextCodec::codecForLocale()->toUnicode(file.readLine());
     QStringList list = line.split(QRegExp(splitRegExp), QString::SkipEmptyParts);
-    if (m_dimension < 0)
-      m_dimension = list.count() - 1;
+    //if (m_dimension < 0)
+      //m_dimension = list.count() - additionColumns;
     /*
     if (list.count() != m_dimension)
     {
@@ -144,27 +146,38 @@ void Form::loadDataToTable(QTableWidget* table, int additionColumns)
       return;
     }
     /**/
-    if (table->columnCount() != list.count())
+    if (table->columnCount() != list.count() + additionColumns)
       table->setColumnCount(list.count() + additionColumns);
-    table->setRowCount(row + 1);
-    for (int i = 0; i < list.count(); ++i)
+    if (row == -1)
     {
-      QTableWidgetItem* item = new QTableWidgetItem();
-      double value = list.at(i).toDouble();
-      item->setData(Qt::DisplayRole, value);
-      table->setItem(row, i, item);
+      for (int i = 0; i < list.count(); ++i)
+      {
+        QTableWidgetItem* item = new QTableWidgetItem();
+        item->setData(Qt::DisplayRole, (list.at(i)));
+        table->setHorizontalHeaderItem(i, item);
+      }
     }
-    if (additionColumns > 0)
+    else
     {
-      QTableWidgetItem* item = new QTableWidgetItem();
-      item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-      table->setItem(row, table->columnCount() - additionColumns, item);
+      table->setRowCount(row + 1);
+      for (int i = 0; i < list.count(); ++i)
+      {
+        QTableWidgetItem* item = new QTableWidgetItem();
+        item->setData(Qt::DisplayRole, list.at(i));
+        table->setItem(row, i, item);
+      }
+      if (additionColumns > 0)
+      {
+        QTableWidgetItem* item = new QTableWidgetItem();
+        item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+        table->setItem(row, table->columnCount() - additionColumns, item);
+      }
     }
     ++row;
   }
   if (additionColumns > 0)
   {
-    QTableWidgetItem* item = new QTableWidgetItem(tr("Result"));
+    QTableWidgetItem* item = new QTableWidgetItem(tr("Phenomenon"));
     table->setHorizontalHeaderItem(table->columnCount() - additionColumns, item);
   }
 }
@@ -199,15 +212,24 @@ void Form::saveResult()
   if (!file.open(QIODevice::WriteOnly))
     return;
 
+  QString separator = fileName.split(".").last() == "csv" ? ";" : "\t";
   QTextStream out(&file);
+  for (int c = 0; c < m_checkTable->columnCount(); ++c)
+  {
+    QTableWidgetItem* item = m_checkTable->horizontalHeaderItem(c);
+    if (item)
+      out << item->data(Qt::DisplayRole).toString() << separator;
+  }
+  out << "\r\n";
   for (int r = 0; r < m_checkTable->rowCount(); ++r)
   {
     for (int c = 0; c < m_checkTable->columnCount(); ++c)
     {
       QTableWidgetItem* item = m_checkTable->item(r, c);
-      out << item->data(Qt::DisplayRole).toString() << "\t";
+      if (item)
+        out << item->data(Qt::DisplayRole).toString() << separator;
     }
-    out << "\n";
+    out << "\r\n";
   }
 }
 
@@ -227,6 +249,7 @@ QMap<QString, VectorList > Form::getDataFromTable(const QTableWidget* table) con
   if (!table)
     return map;
 
+  QLocale locale = QLocale::system();
   for (int row = 0; row < table->rowCount(); ++row)
   {
     QVector<double> vector;
@@ -236,7 +259,7 @@ QMap<QString, VectorList > Form::getDataFromTable(const QTableWidget* table) con
       QTableWidgetItem* item = table->item(row, column);
       if (!item)
         continue;
-      vector.append(item->data(Qt::DisplayRole).toDouble());
+      vector.append(locale.toDouble(item->data(Qt::DisplayRole).toString()));
     }
     QTableWidgetItem* item = table->item(row, table->columnCount() - 1);
     if (item)
@@ -250,17 +273,25 @@ QMap<QString, VectorList > Form::getDataFromTable(const QTableWidget* table) con
 
 void Form::calByAverageValue()
 {
+  QLocale locale = QLocale::system();
   QMap<QString, VectorList > groups = getDataFromTable(m_firstTabel);
   for (int vectorNum = 0; vectorNum < m_checkTable->rowCount(); ++vectorNum)
   {
     QVector<double> valueVector;
     for (int i = 0; i < m_checkTable->columnCount() - 1; ++i)
-      valueVector.append(m_checkTable->item(vectorNum, i)->data(Qt::DisplayRole).toDouble());
+    {
+      QTableWidgetItem* item = m_checkTable->item(vectorNum, i);
+      if (!item)
+        continue;
+      valueVector.append(locale.toDouble(item->data(Qt::DisplayRole).toString()));
+    }
+    /*
     if (valueVector.count() != m_dimension)
     {
       m_resultTEdit->append(tr("Dimension error for row %1").arg(vectorNum));
       continue;
     }
+    /* */
     QList<QVector<double> > averageVectors;
     QString group = Utils::calcByAverage(groups, valueVector, averageVectors);
     if (!group.isEmpty())
@@ -273,7 +304,8 @@ void Form::calByAverageValue()
       {
         avStr += "(";
         for (int j = 0; j < averageVectors.at(i).count(); ++j)
-          avStr += QString::number(averageVectors.at(i).at(j), 'f', 1) + " ";
+          avStr += QString::number(averageVectors.at(i).at(j), 'f', 1)
+          + ((j != averageVectors.at(i).count() - 1) ? "; " : "");
         avStr += ") ";
       }
       m_resultTEdit->append(tr("%1) Method by average value: group %2, average vectors %3").arg(vectorNum+1).arg(group).arg(avStr));
@@ -288,12 +320,19 @@ void Form::calByRegion()
   {
     QVector<double> valueVector;
     for (int i = 0; i < m_checkTable->columnCount() - 1; ++i)
-      valueVector.append(m_checkTable->item(vectorNum, i)->data(Qt::DisplayRole).toDouble());
+    {
+      QTableWidgetItem* item = m_checkTable->item(vectorNum, i);
+      if (!item)
+        continue;
+      valueVector.append(item->data(Qt::DisplayRole).toDouble());
+    }
+    /*
     if (valueVector.count() != m_dimension)
     {
       m_resultTEdit->append(tr("Dimension error for row %1").arg(vectorNum));
       continue;
     }
+    /* */
     double r;
     QString group = Utils::calcByRegion(groups, valueVector, r);
     if (!group.isEmpty())
@@ -314,12 +353,13 @@ void Form::calByMinValue()
     QVector<double> valueVector;
     for (int i = 0; i < m_checkTable->columnCount() - 1; ++i)
       valueVector.append(m_checkTable->item(vectorNum, i)->data(Qt::DisplayRole).toDouble());
-
+    /*
     if (valueVector.count() != m_dimension)
     {
       m_resultTEdit->append(tr("Dimension error for row %1").arg(vectorNum));
       continue;
     }
+    /* */
     QVector<double> minP;
     QString group = Utils::calcByMinValue(groups, valueVector, minP);
     if (!group.isEmpty())

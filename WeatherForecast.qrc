@@ -1,6 +1,7 @@
 <RCC>
     <qresource prefix="Skins">
         <file alias="ui-dark-orange">resources/css/ui-dark-orange.css</file>
+        <file alias="d-theme-blue">resources/css/d-theme-blue/d-theme-blue.qss</file>
     </qresource>
     <qresource prefix="Images">
         <file>resources/images/checkbox.png</file>

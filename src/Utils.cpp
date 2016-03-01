@@ -18,13 +18,15 @@ QString Utils::calcByAverage(const QMap<QString, VectorList >& groups, const QVe
     {
       if (averageVector.isEmpty())
       {
-        averageVector.resize(group.at(vectorIndex).count());
+        averageVector.resize(group.at(vectorIndex).count()); // ?!
         averageVector.fill(0.0);
       }
       QVector<double> vector = group.at(vectorIndex);
       for (int i = 0; i < vector.count(); ++i)
-        averageVector[i] += vector[i] / group.count();
+        averageVector[i] += vector[i] / (double)group.count();
     }
+    if (averageVector.count() != value.count())
+      return QString();
     averagePoint.append(averageVector);
     double distance2 = -1.0;
     for (int i = 0; i < averageVector.count(); ++i)
