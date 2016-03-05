@@ -5,9 +5,8 @@
 
 const int requiredVectorCount = 4;
 
-QString Utils::calcByAverage(const QMap<QString, VectorList >& groups, const QVector<double>& value, VectorList& averagePoint)
+QString Utils::calcByAverage(const QMap<QString, VectorList >& groups, const QVector<double>& value, AverageCalcOutput& output)
 {
-  averagePoint.clear();
   QString resultGroup;
   double minDistance2 = 0.0;
   for (QMap<QString, VectorList>::const_iterator cit = groups.cbegin(); cit != groups.cend(); ++cit)
@@ -26,8 +25,11 @@ QString Utils::calcByAverage(const QMap<QString, VectorList >& groups, const QVe
         averageVector[i] += vector[i] / (double)group.count();
     }
     if (averageVector.count() != value.count())
+    {
+      output.error = QObject::tr("Dimension is different");
       return QString();
-    averagePoint.append(averageVector);
+    }
+    output.averagePoints.insert(cit.key(), averageVector);
     double distance2 = -1.0;
     for (int i = 0; i < averageVector.count(); ++i)
       distance2 += pow(averageVector[i] - value[i], 2);
@@ -42,6 +44,8 @@ QString Utils::calcByAverage(const QMap<QString, VectorList >& groups, const QVe
       resultGroup = cit.key();
     }
   }
+  output.distance = qSqrt(minDistance2);
+
   return resultGroup;
 }
 

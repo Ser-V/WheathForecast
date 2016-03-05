@@ -273,8 +273,10 @@ QMap<QString, VectorList > Form::getDataFromTable(const QTableWidget* table) con
 
 void Form::calByAverageValue()
 {
+  m_resultTEdit->clear();
   QLocale locale = QLocale::system();
   QMap<QString, VectorList > groups = getDataFromTable(m_firstTabel);
+  bool isAverageClac = false;
   for (int vectorNum = 0; vectorNum < m_checkTable->rowCount(); ++vectorNum)
   {
     QVector<double> valueVector;
@@ -292,29 +294,38 @@ void Form::calByAverageValue()
       continue;
     }
     /* */
-    QList<QVector<double> > averageVectors;
-    QString group = Utils::calcByAverage(groups, valueVector, averageVectors);
-    if (!group.isEmpty())
+    Utils::AverageCalcOutput output;
+    QString group = Utils::calcByAverage(groups, valueVector, output);
+    if (!output.error.isEmpty())
+    {
+      m_resultTEdit->append(tr("%1) Error. %2").arg(vectorNum+1).arg(output.error));
+    }
+    else if (!group.isEmpty())
     {
       QTableWidgetItem* item = new QTableWidgetItem();
       item->setData(Qt::DisplayRole, group);
       m_checkTable->setItem(vectorNum, m_checkTable->columnCount() - 1, item);
-      QString avStr;
-      for (int i = 0; i < averageVectors.count(); ++i)
+      if (!isAverageClac)
       {
-        avStr += "(";
-        for (int j = 0; j < averageVectors.at(i).count(); ++j)
-          avStr += QString::number(averageVectors.at(i).at(j), 'f', 1)
-          + ((j != averageVectors.at(i).count() - 1) ? "; " : "");
-        avStr += ") ";
+        for (QMap< QString, QVector<double> >::const_iterator cit = output.averagePoints.cbegin(); cit != output.averagePoints.cend(); ++cit)
+        {
+          QString avStr = "(";
+          for (int j = 0; j < (*cit).count(); ++j)
+            avStr += QString::number((*cit).at(j), 'f', 1)
+            + ((j != (*cit).count() - 1) ? "; " : "");
+          avStr += ")";
+          m_resultTEdit->append(tr("Phenomenon %1 - average vectors %2").arg(cit.key()).arg(avStr));
+        }
+        isAverageClac = true;
       }
-      m_resultTEdit->append(tr("%1) Method by average value: group %2, average vectors %3").arg(vectorNum+1).arg(group).arg(avStr));
+      m_resultTEdit->append(tr("%1) Method by average value: Phenomenon %2, distance %3").arg(vectorNum+1).arg(group).arg(output.distance, 0, 'f', 1));
     }
   }
 }
 
 void Form::calByRegion()
 {
+  m_resultTEdit->clear();
   QMap<QString, VectorList > groups = getDataFromTable(m_firstTabel);
   for (int vectorNum = 0; vectorNum < m_checkTable->rowCount(); ++vectorNum)
   {
@@ -347,6 +358,7 @@ void Form::calByRegion()
 
 void Form::calByMinValue()
 {
+  m_resultTEdit->clear();
   QMap<QString, VectorList > groups = getDataFromTable(m_firstTabel);
   for (int vectorNum = 0; vectorNum < m_checkTable->rowCount(); ++vectorNum)
   {
