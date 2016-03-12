@@ -66,9 +66,34 @@
         <translation>Контрольная выборка</translation>
     </message>
     <message>
-        <location filename="../src/Form.cpp" line="180"/>
+        <location filename="../src/Form.cpp" line="177"/>
+        <source>Loading data</source>
+        <translation>Загрузка данных</translation>
+    </message>
+    <message>
+        <location filename="../src/Form.cpp" line="177"/>
+        <source>Dimension is different. Line %1</source>
+        <translation>Разная размерность. Строка %1</translation>
+    </message>
+    <message>
+        <location filename="../src/Form.cpp" line="185"/>
         <source>Phenomenon</source>
         <translation>Явление</translation>
+    </message>
+    <message>
+        <location filename="../src/Form.cpp" line="306"/>
+        <source>%1) Error. %2</source>
+        <translation>%1) Ошибка. %2</translation>
+    </message>
+    <message>
+        <location filename="../src/Form.cpp" line="322"/>
+        <source>Phenomenon %1 - average vectors %2</source>
+        <translation>Явление %1 - среднее значение %2</translation>
+    </message>
+    <message>
+        <location filename="../src/Form.cpp" line="326"/>
+        <source>%1) Method by average value: Phenomenon %2, distance %3</source>
+        <translation>%1) Метод среднего значения: Явление %2, расстояние %3</translation>
     </message>
     <message>
         <source>Test data</source>
@@ -76,7 +101,7 @@
     </message>
     <message>
         <location filename="../src/Form.cpp" line="89"/>
-        <location filename="../src/Form.cpp" line="207"/>
+        <location filename="../src/Form.cpp" line="212"/>
         <source>Save</source>
         <translation>Сохранить</translation>
     </message>
@@ -95,19 +120,26 @@
         <translation type="vanished">Ошибка размерности в сторке %1</translation>
     </message>
     <message>
-        <location filename="../src/Form.cpp" line="310"/>
         <source>%1) Method by average value: group %2, average vectors %3</source>
-        <translation>%1) Метод эталонов: явление %2, среднее значение %3</translation>
+        <translation type="vanished">%1) Метод эталонов: явление %2, среднее значение %3</translation>
     </message>
     <message>
-        <location filename="../src/Form.cpp" line="342"/>
+        <location filename="../src/Form.cpp" line="359"/>
         <source>%1) Method by region: group %2, radius %3</source>
         <translation>%1) Метод K ближайших точек: явление %2, радиус %3</translation>
     </message>
     <message>
-        <location filename="../src/Form.cpp" line="373"/>
+        <location filename="../src/Form.cpp" line="391"/>
         <source>%1) Method by min value: group %2, min point (%3)</source>
-        <translation>%1) Метод ближайщей точки: явление %2, точка снаименьшим расстоянием (%3)</translation>
+        <translation>%1) Метод ближайщей точки: явление %2, точка с наименьшим расстоянием (%3)</translation>
+    </message>
+</context>
+<context>
+    <name>QObject</name>
+    <message>
+        <location filename="../src/Utils.cpp" line="29"/>
+        <source>Dimension is different</source>
+        <translation>Разная размерность</translation>
     </message>
 </context>
 </TS>

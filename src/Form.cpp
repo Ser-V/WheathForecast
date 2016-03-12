@@ -146,10 +146,10 @@ void Form::loadDataToTable(QTableWidget* table, int additionColumns)
       return;
     }
     /**/
-    if (table->columnCount() != list.count() + additionColumns)
-      table->setColumnCount(list.count() + additionColumns);
     if (row == -1)
     {
+      if (table->columnCount() != list.count() + additionColumns)
+        table->setColumnCount(list.count() + additionColumns);
       for (int i = 0; i < list.count(); ++i)
       {
         QTableWidgetItem* item = new QTableWidgetItem();
@@ -171,6 +171,11 @@ void Form::loadDataToTable(QTableWidget* table, int additionColumns)
         QTableWidgetItem* item = new QTableWidgetItem();
         item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
         table->setItem(row, table->columnCount() - additionColumns, item);
+      }
+      if (table->columnCount() != list.count() + additionColumns)
+      {
+        QMessageBox::warning(this, tr("Loading data"), tr("Dimension is different. Line %1").arg(row + 1), QMessageBox::Ok);
+          return;
       }
     }
     ++row;
