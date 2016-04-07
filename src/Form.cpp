@@ -331,6 +331,7 @@ void Form::calByAverageValue()
 void Form::calByRegion()
 {
   m_resultTEdit->clear();
+  QLocale locale = QLocale::system();
   QMap<QString, VectorList > groups = getDataFromTable(m_firstTabel);
   for (int vectorNum = 0; vectorNum < m_checkTable->rowCount(); ++vectorNum)
   {
@@ -340,7 +341,7 @@ void Form::calByRegion()
       QTableWidgetItem* item = m_checkTable->item(vectorNum, i);
       if (!item)
         continue;
-      valueVector.append(item->data(Qt::DisplayRole).toDouble());
+      valueVector.append(locale.toDouble(item->data(Qt::DisplayRole).toString()));
     }
     /*
     if (valueVector.count() != m_dimension)
@@ -364,12 +365,18 @@ void Form::calByRegion()
 void Form::calByMinValue()
 {
   m_resultTEdit->clear();
+  QLocale locale = QLocale::system();
   QMap<QString, VectorList > groups = getDataFromTable(m_firstTabel);
   for (int vectorNum = 0; vectorNum < m_checkTable->rowCount(); ++vectorNum)
   {
     QVector<double> valueVector;
     for (int i = 0; i < m_checkTable->columnCount() - 1; ++i)
-      valueVector.append(m_checkTable->item(vectorNum, i)->data(Qt::DisplayRole).toDouble());
+    {
+      QTableWidgetItem* item = m_checkTable->item(vectorNum, i);
+      if (!item)
+        continue;
+      valueVector.append(locale.toDouble(item->data(Qt::DisplayRole).toString()));
+    }
     /*
     if (valueVector.count() != m_dimension)
     {
